@@ -7,6 +7,7 @@ pub struct Observable {
 }
 
 impl Observable {
+    /// Makes a new `Observable` object
     pub fn new(observable_decomp: Vec<String>, coeffs: Vec<Complex<f64>>, num_qubits: u32) -> Self {
         assert!(
             observable_decomp.len() == coeffs.len(),
@@ -20,8 +21,9 @@ impl Observable {
         }
     }
 
+    /// Applies an observable to a quantum state
     #[allow(unused_assignments)]
-    pub fn apply(&self, psi: &DVector<Complex<f64>>) -> DVector<Complex<f64>> {
+    pub(crate) fn apply(&self, psi: &DVector<Complex<f64>>) -> DVector<Complex<f64>> {
         let mut phi = DVector::zeros(psi.len());
         for (i, term) in self.observable_decomp.iter().enumerate() {
             assert!(

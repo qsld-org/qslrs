@@ -825,6 +825,61 @@ impl QuantumCircuit {
         result.re
     }
 
+    // Collapse a single qubit after single qubit measurement
+    fn collapse(&mut self, qubit_idx: u32, outcome_prob: f64, result: u32) {
+        for i in 0..self.state.len() {
+            if ((i as u32 >> qubit_idx) & 1) != result {
+                self.state[i] = Complex::new(0.0, 0.0);
+            } else {
+                self.state[i] = self.state[i] * (1.0 / outcome_prob.sqrt());
+            }
+        }
+    }
+
+    // Collapse multiple qubits within the system after multi-qubit measurement
+    fn collapse_many(&mut self, qubit_idxs: &[u32], mask: u32, result: u32) {
+        let mut target_sampled = 0;
+
+        for (i, idx) in qubit_idxs.iter().enumerate() {
+            let bit = (result >> i) & 1;
+            if bit == 1 {
+                target_sampled = target_sampled | (1 << idx);
+            }
+        }
+
+        for i in 0..(1 << self.num_qubits) {
+            if (i & mask) != target_sampled {
+                self.state[i as usize] = Complex::new(0.0, 0.0);
+            }
+        }
+
+        let mut state_norm = 0.0;
+        for (_, amp) in self.state.iter().enumerate() {
+            state_norm += amp.norm_sqr();
+        }
+
+        state_norm = state_norm.sqrt();
+
+        for i in 0..(1 << self.num_qubits) {
+            let i = i as usize;
+            self.state[i] = self.state[i] / state_norm;
+        }
+    }
+
+    // Collapse all the qubits in the system after all qubit measurement
+    fn collapse_all(&mut self, outcome_prob: f64, result: String) {
+        for i in 0..self.state.len() {
+            let bit_str = format!("{:0width$b}", i, width = self.num_qubits as usize);
+            if bit_str != result {
+                self.state[i] = Complex::new(0.0, 0.0);
+            }
+        }
+
+        for i in 0..self.state.len() {
+            self.state[i] = self.state[i] * (1.0 / outcome_prob.sqrt());
+        }
+    }
+
     /// Measures the qubit specified and gives a singular state as the
     /// result unless the qubit is in superposition or some other arbitrary
     /// probability distribution of states
@@ -871,9 +926,17 @@ impl QuantumCircuit {
             if r < probability_0 {
                 result = 0;
                 *result_map.entry(result.to_string()).or_insert(0) += 1;
+
+                if self.collapse {
+                    self.collapse(qubit_idx, probability_0, result);
+                }
             } else if r >= probability_0 {
                 result = 1;
                 *result_map.entry(result.to_string()).or_insert(0) += 1;
+
+                if self.collapse {
+                    self.collapse(qubit_idx, probability_1, result);
+                }
             }
         }
 
@@ -947,6 +1010,10 @@ impl QuantumCircuit {
                     *result_map
                         .entry(format!("{:0width$b}", result, width = qubit_idxs.len()))
                         .or_insert(0) += 1;
+
+                    if self.collapse {
+                        self.collapse_many(qubit_idxs, mask as u32, result as u32);
+                    }
                     break;
                 }
             }
@@ -985,7 +1052,7 @@ impl QuantumCircuit {
 
         for _ in 0..self.shots {
             for i in 0..self.state.len() {
-                let prob = self.state[i].norm_squared();
+                let prob = self.state[i].norm_sqr();
                 probs[i] = prob;
             }
 
@@ -1003,6 +1070,13 @@ impl QuantumCircuit {
                             width = self.num_qubits as usize
                         ))
                         .or_insert(0) += 1;
+
+                    if self.collapse {
+                        let binary_result =
+                            format!("{:0width$b}", result, width = self.num_qubits as usize);
+
+                        self.collapse_all(probs[i], binary_result);
+                    }
                     break;
                 }
             }
