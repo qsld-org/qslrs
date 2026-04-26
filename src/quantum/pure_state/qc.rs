@@ -5,6 +5,8 @@ use rand::RngExt;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 
+use crate::quantum::pure_state::observable::Observable;
+
 /// The main QuantumCircuit object used to execute gates on
 /// qubits. Refer to the `QuantumCircuitBuilder` for how to create
 /// this object.
@@ -25,6 +27,7 @@ pub struct QuantumCircuit {
 ///
 /// ```
 /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+///
 /// let mut qc = QuantumCircuit::builder()
 ///     .num_qubits(2)
 ///     .initial_state_idx(0)
@@ -48,6 +51,7 @@ impl QuantumCircuitBuilder {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -63,6 +67,7 @@ impl QuantumCircuitBuilder {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .initial_state_idx(1)
@@ -168,6 +173,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -190,6 +196,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -232,6 +239,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .initial_state_idx(1)
@@ -272,6 +280,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -309,6 +318,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -336,6 +346,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -361,6 +372,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -402,6 +414,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -436,6 +449,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -461,6 +475,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = Quantumcircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -487,6 +502,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(3)
     ///     .initial_state_idx(7)
@@ -522,6 +538,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuatumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .initial_state_idx(1)
@@ -560,6 +577,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .initial_state_idx(1)
@@ -596,6 +614,7 @@ impl QuantumCircuit {
     /// ```
     /// use std::f64::consts::PI;
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -632,6 +651,7 @@ impl QuantumCircuit {
     /// ```
     /// use std::f64::consts::PI;
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -669,6 +689,7 @@ impl QuantumCircuit {
     /// ```
     /// use std::f64::consts:PI;
     /// use qslrs::quantum:pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .build()?;
@@ -700,6 +721,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -741,6 +763,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .build()?;
@@ -775,6 +798,33 @@ impl QuantumCircuit {
         self
     }
 
+    /// Gets the average value over many iterations of measurement
+    /// for a specific operation on a quantum state
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::{qc:QuantumCircuit, observable::Observable};
+    /// use nalgebra::Complex;
+    /// use std::f64::consts::PI;
+    ///
+    /// let mut qc = QuantumCircuit::builder()
+    ///     .num_qubits(1)
+    ///     .build()?;
+    ///
+    /// let pauli_terms = Vec::from(["X".to_string()]);
+    /// let coeffs = Vec::from([Complex::new(1.0, 0.0)]);
+    /// let obs = Observable::new(pauli_terms, coeffs, qc.num_qubits);
+    ///
+    /// println!("{}", qc.hadamard(0).rz(0, PI / 4.0).expectation_value(obs));
+    /// ```
+    pub fn expectation_value(&self, obs: &Observable) -> f64 {
+        let psi_dagger = self.state.conjugate();
+        let phi = obs.apply(&self.state);
+        let result = psi_dagger.dot(&phi);
+        result.re
+    }
+
     /// Measures the qubit specified and gives a singular state as the
     /// result unless the qubit is in superposition or some other arbitrary
     /// probability distribution of states
@@ -783,6 +833,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(1)
     ///     .shots(1000)
@@ -840,6 +891,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .shots(1000)
@@ -913,6 +965,7 @@ impl QuantumCircuit {
     ///
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
     /// let mut qc = QuantumCircuit::builder()
     ///     .num_qubits(2)
     ///     .shots(1000)
