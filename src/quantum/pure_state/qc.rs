@@ -1,10 +1,14 @@
 use anyhow::{Result, anyhow};
 use nalgebra::base::{DMatrix, DVector};
-use nalgebra::{Complex, Normed, dmatrix};
+use nalgebra::{Complex, dmatrix};
 use rand::RngExt;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 
+use crate::quantum::pure_state::gate_noise::{
+    BitFlipNoiseConfig, BitPhaseFlipNoiseConfig, PauliNoiseConfig, PhaseFlipNoiseConfig,
+};
+use crate::quantum::pure_state::gate_noise::{DepolarizingNoiseConfig, GateNoise};
 use crate::quantum::pure_state::observable::Observable;
 
 /// The main QuantumCircuit object used to execute gates on
@@ -186,6 +190,34 @@ impl QuantumCircuit {
     pub fn no_visualization(&mut self) -> &mut Self {
         if let Some(last_elem) = self.visualization_arr.last_mut() {
             last_elem.2 = false;
+        }
+        self
+    }
+
+    /// Reset the state completely to the starting state of the system.
+    /// This function is mainly useful for benchmarking but can be used
+    /// in other cases
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
+    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
+    ///
+    /// qc.hadamard(0).cnot(0, 1);
+    /// // The state is now not a bell state anymore
+    /// qc.reset_state();
+    /// // qubit 0 goes back into superpostion
+    /// qc.hadamard(0);
+    /// ```
+    pub fn reset_state(&mut self) -> &mut Self {
+        for i in 0..self.state.len() {
+            if i == self.initial_state_idx {
+                self.state[i] = Complex::new(1.0, 0.0);
+            } else {
+                self.state[i] = Complex::new(0.0, 0.0);
+            }
         }
         self
     }
@@ -795,6 +827,101 @@ impl QuantumCircuit {
             }
         }
 
+        self
+    }
+
+    /// Applies depolarizing noise to the qubit(s) specified by the configuration
+    /// `DepolarizingNoiseConfig` with some probability(s) also specified in the config
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
+    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
+    /// let d_config = DepolarizingNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    ///
+    /// qc.hadamard(0).depolarizing_noise(d_config)?.cnot(0, 1);
+    /// ```
+    pub fn depolarizing_noise(&mut self, config: DepolarizingNoiseConfig) -> Result<&mut Self> {
+        let mut gn = GateNoise::new();
+        gn.depolarizing_noise(self, config)?;
+        Ok(self)
+    }
+
+    /// Applies a pauli operator which is a representation of an error to the qubit(s) specified by
+    /// the config `PauliNoiseConfig` with some probability(s) also specified in the config
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
+    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
+    /// let p_config = PauliNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    ///
+    /// qc.hadamard(0).pauli_noise(p_config)?.cnot(0, 1);
+    /// ```
+    pub fn pauli_noise(&mut self, config: PauliNoiseConfig) -> Result<&mut Self> {
+        let mut gn = GateNoise::new();
+        gn.pauli_noise(self, config)?;
+        Ok(self)
+    }
+
+    /// Applies an X gate to flip the qubit(s) specified in the config `BitFlipNoiseConfig`
+    /// with some probability(s) also specified in the config
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
+    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
+    /// let b_config = BitFlipNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    ///
+    /// qc.hadamard(0).bit_flip_noise(b_config).cnot(0, 1);
+    /// ```
+    pub fn bit_flip_noise(&mut self, config: BitFlipNoiseConfig) -> &mut Self {
+        let mut gn = GateNoise::new();
+        gn.bit_flip_noise(self, config);
+        self
+    }
+
+    /// Applies a Z gate to flip the phase of the qubit(s) specified in the config `PhaseFlipNoiseConfig`
+    /// with some probability(s) also specified in the config
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
+    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
+    /// let p_config = PhaseFlipNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    ///
+    /// qc.hadamard(0).bit_flip_noise(p_config).cnot(0, 1);
+    /// ```
+    pub fn phase_flip_noise(&mut self, config: PhaseFlipNoiseConfig) -> &mut Self {
+        let mut gn = GateNoise::new();
+        gn.phase_flip_noise(self, config);
+        self
+    }
+
+    /// Applies an X and a Z gate to flip the phase and value of the qubit(s) specified in the config
+    /// `BitPhaseFlipNoiseConfig` with some probability(s) also specified in the config
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
+    ///
+    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
+    /// let bp_config = BitPhaseFlipNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    ///
+    /// qc.hadamard(0).bit_phase_flip_noise(bp_config).cnot(0, 1);
+    /// ```
+    pub fn bit_phase_flip_noise(&mut self, config: BitPhaseFlipNoiseConfig) -> &mut Self {
+        let mut gn = GateNoise::new();
+        gn.bit_phase_flip_noise(self, config);
         self
     }
 

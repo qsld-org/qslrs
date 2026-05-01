@@ -5,8 +5,17 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
+approx = "0.5.1"
 nalgebra = "0.34.2"
 rand = "0.10.1"
 
-[profile.release]
-debug = true
+[dev-dependencies]
+criterion = { version = "0.8.2", features = ["html_reports"] }
+
+[[bench]]
+name = "circuit_benchmarks"
+harness = false
+
+[[bench]]
+name = "noise_benchmarks"
+harness = false
