@@ -7,6 +7,7 @@ edition = "2024"
 anyhow = "1.0.102"
 approx = "0.5.1"
 nalgebra = "0.34.2"
+qslrs_macros = {path = "./qslrs_macros"}
 rand = "0.10.1"
 
 [dev-dependencies]
@@ -19,3 +20,4 @@ harness = false
 [[bench]]
 name = "noise_benchmarks"
 harness = false
+

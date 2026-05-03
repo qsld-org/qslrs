@@ -694,7 +694,19 @@ dependencies = [
  "approx",
  "criterion",
  "nalgebra",
+ "qslrs_macros",
  "rand",
+]
+
+[[package]]
+name = "qslrs_macros"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "rand",
+ "syn",
 ]
 
 [[package]]

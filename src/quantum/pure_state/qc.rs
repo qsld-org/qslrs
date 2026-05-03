@@ -21,6 +21,7 @@ pub struct QuantumCircuit {
     pub initial_state_idx: usize,
     pub(crate) visualization_arr: Vec<(String, Vec<u32>, bool)>,
     pub(crate) shots: u32,
+    pub(crate) print_measure_results: bool,
     pub(crate) collapse: bool,
 }
 
@@ -44,6 +45,7 @@ pub struct QuantumCircuitBuilder {
     initial_state_idx: Option<usize>,
     visualization_arr: Option<Vec<(String, Vec<u32>, bool)>>,
     shots: Option<u32>,
+    print_measure_results: bool,
     collapse: bool,
 }
 
@@ -85,6 +87,12 @@ impl QuantumCircuitBuilder {
     /// Specifies the amount of times to measure the circuit
     pub fn shots(&mut self, value: u32) -> &mut Self {
         self.shots = Some(value);
+        self
+    }
+
+    /// Prints the measurement results aside from also returning them
+    pub fn print_measurements(&mut self) -> &mut Self {
+        self.print_measure_results = true;
         self
     }
 
@@ -146,6 +154,7 @@ impl QuantumCircuitBuilder {
             initial_state_idx: initial_state_idx,
             visualization_arr: visualization_arr,
             shots: measure_shots,
+            print_measure_results: self.print_measure_results,
             collapse: self.collapse,
         })
     }
@@ -161,6 +170,7 @@ impl QuantumCircuit {
             initial_state_idx: None,
             visualization_arr: None,
             shots: None,
+            print_measure_results: false,
             collapse: false,
         }
     }
@@ -1068,9 +1078,17 @@ impl QuantumCircuit {
         }
 
         if self.shots == 1 {
-            String::from(format!("{result}"))
+            let result = String::from(format!("{result}"));
+            if self.print_measure_results {
+                println!("{result}");
+            }
+            result
         } else {
-            format!("{result_map:?}")
+            let result = format!("{result_map:?}");
+            if self.print_measure_results {
+                println!("{result}");
+            }
+            result
         }
     }
 
@@ -1147,9 +1165,17 @@ impl QuantumCircuit {
         }
 
         if self.shots == 1 {
-            format!("{:0width$b}", result, width = qubit_idxs.len())
+            let result = format!("{:0width$b}", result, width = qubit_idxs.len());
+            if self.print_measure_results {
+                println!("{result}");
+            }
+            result
         } else {
-            format!("{result_map:?}")
+            let result = format!("{result_map:?}");
+            if self.print_measure_results {
+                println!("{result}");
+            }
+            result
         }
     }
 
@@ -1210,9 +1236,17 @@ impl QuantumCircuit {
         }
 
         if self.shots == 1 {
-            format!("{:0width$b}", result, width = self.num_qubits as usize)
+            let result = format!("{:0width$b}", result, width = self.num_qubits as usize);
+            if self.print_measure_results {
+                println!("{result}");
+            }
+            result
         } else {
-            format!("{result_map:?}")
+            let result = format!("{result_map:?}");
+            if self.print_measure_results {
+                println!("{result}");
+            }
+            result
         }
     }
 }
