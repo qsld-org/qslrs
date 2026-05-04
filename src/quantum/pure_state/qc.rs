@@ -23,6 +23,11 @@ pub struct QuantumCircuit {
     pub(crate) shots: u32,
     pub(crate) print_measure_results: bool,
     pub(crate) collapse: bool,
+    pub(crate) depolarizing_noise_config: Option<DepolarizingNoiseConfig>,
+    pub(crate) pauli_noise_config: Option<PauliNoiseConfig>,
+    pub(crate) bit_flip_noise_config: Option<BitFlipNoiseConfig>,
+    pub(crate) phase_flip_noise_config: Option<PhaseFlipNoiseConfig>,
+    pub(crate) bit_phase_flip_noise_config: Option<BitPhaseFlipNoiseConfig>,
 }
 
 /// The object which builds the quantum circuit according to various
@@ -47,6 +52,11 @@ pub struct QuantumCircuitBuilder {
     shots: Option<u32>,
     print_measure_results: bool,
     collapse: bool,
+    depolarizing_noise_config: Option<DepolarizingNoiseConfig>,
+    pauli_noise_config: Option<PauliNoiseConfig>,
+    bit_flip_noise_config: Option<BitFlipNoiseConfig>,
+    phase_flip_noise_config: Option<PhaseFlipNoiseConfig>,
+    bit_phase_flip_noise_config: Option<BitPhaseFlipNoiseConfig>,
 }
 
 impl QuantumCircuitBuilder {
@@ -81,6 +91,36 @@ impl QuantumCircuitBuilder {
     /// ```
     pub fn initial_state_idx(&mut self, value: usize) -> &mut Self {
         self.initial_state_idx = Some(value);
+        self
+    }
+
+    /// Specify the `DepolarizingNoiseConfig` to apply depolarizing noise to the circuit
+    pub fn depolarizing_noise_config(&mut self, value: DepolarizingNoiseConfig) -> &mut Self {
+        self.depolarizing_noise_config = Some(value);
+        self
+    }
+
+    /// Specify the `PauliNoiseConfig` to apply pauli noise to the circuit
+    pub fn pauli_noise_config(&mut self, value: PauliNoiseConfig) -> &mut Self {
+        self.pauli_noise_config = Some(value);
+        self
+    }
+
+    /// Specify the `BitFlipNoiseConfig` to apply bit flip noise to the circuit
+    pub fn bit_flip_noise_config(&mut self, value: BitFlipNoiseConfig) -> &mut Self {
+        self.bit_flip_noise_config = Some(value);
+        self
+    }
+
+    /// Specify the `PhaseFlipNoiseConfig` to apply phase flip noise to the circuit
+    pub fn phase_flip_noise_config(&mut self, value: PhaseFlipNoiseConfig) -> &mut Self {
+        self.phase_flip_noise_config = Some(value);
+        self
+    }
+
+    /// Specify the `BitPhaseFlipNoiseConfig` to apply bit and phase flip noise to the circuit
+    pub fn bit_phase_flip_noise_config(&mut self, value: BitPhaseFlipNoiseConfig) -> &mut Self {
+        self.bit_phase_flip_noise_config = Some(value);
         self
     }
 
@@ -156,6 +196,11 @@ impl QuantumCircuitBuilder {
             shots: measure_shots,
             print_measure_results: self.print_measure_results,
             collapse: self.collapse,
+            depolarizing_noise_config: self.depolarizing_noise_config.clone(),
+            pauli_noise_config: self.pauli_noise_config.clone(),
+            bit_flip_noise_config: self.bit_flip_noise_config.clone(),
+            phase_flip_noise_config: self.phase_flip_noise_config.clone(),
+            bit_phase_flip_noise_config: self.bit_phase_flip_noise_config.clone(),
         })
     }
 }
@@ -172,6 +217,11 @@ impl QuantumCircuit {
             shots: None,
             print_measure_results: false,
             collapse: false,
+            depolarizing_noise_config: None,
+            pauli_noise_config: None,
+            bit_flip_noise_config: None,
+            phase_flip_noise_config: None,
+            bit_phase_flip_noise_config: None,
         }
     }
 
@@ -848,14 +898,20 @@ impl QuantumCircuit {
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
     ///
-    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
     /// let d_config = DepolarizingNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    /// let mut qc = QuantumCircuit::builder()
+    ///     .num_qubits(2)
+    ///     .depolarizing_noise_config(d_config)
+    ///     .build()?;
     ///
-    /// qc.hadamard(0).depolarizing_noise(d_config)?.cnot(0, 1);
+    /// qc.hadamard(0).depolarizing_noise()?.cnot(0, 1);
     /// ```
-    pub fn depolarizing_noise(&mut self, config: DepolarizingNoiseConfig) -> Result<&mut Self> {
+    pub fn depolarizing_noise(&mut self) -> Result<&mut Self> {
         let mut gn = GateNoise::new();
-        gn.depolarizing_noise(self, config)?;
+        if let Some(dc) = self.depolarizing_noise_config.take() {
+            gn.depolarizing_noise(self, &dc)?;
+            self.depolarizing_noise_config = Some(dc);
+        }
         Ok(self)
     }
 
@@ -867,14 +923,20 @@ impl QuantumCircuit {
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
     ///
-    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
     /// let p_config = PauliNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    /// let mut qc = QuantumCircuit::builder()
+    ///     .num_qubits(2)
+    ///     .pauli_noise_config(p_config)
+    ///     .build()?;
     ///
-    /// qc.hadamard(0).pauli_noise(p_config)?.cnot(0, 1);
+    /// qc.hadamard(0).pauli_noise()?.cnot(0, 1);
     /// ```
-    pub fn pauli_noise(&mut self, config: PauliNoiseConfig) -> Result<&mut Self> {
+    pub fn pauli_noise(&mut self) -> Result<&mut Self> {
         let mut gn = GateNoise::new();
-        gn.pauli_noise(self, config)?;
+        if let Some(pc) = self.pauli_noise_config.take() {
+            gn.pauli_noise(self, &pc)?;
+            self.pauli_noise_config = Some(pc);
+        }
         Ok(self)
     }
 
@@ -886,14 +948,20 @@ impl QuantumCircuit {
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
     ///
-    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
     /// let b_config = BitFlipNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    /// let mut qc = QuantumCircuit::builder()
+    ///     .num_qubits(2)
+    ///     .bit_flip_noise_config(b_config)
+    ///     .build()?;
     ///
-    /// qc.hadamard(0).bit_flip_noise(b_config).cnot(0, 1);
+    /// qc.hadamard(0).bit_flip_noise().cnot(0, 1);
     /// ```
-    pub fn bit_flip_noise(&mut self, config: BitFlipNoiseConfig) -> &mut Self {
+    pub fn bit_flip_noise(&mut self) -> &mut Self {
         let mut gn = GateNoise::new();
-        gn.bit_flip_noise(self, config);
+        if let Some(bfc) = self.bit_flip_noise_config.take() {
+            gn.bit_flip_noise(self, &bfc);
+            self.bit_flip_noise_config = Some(bfc);
+        }
         self
     }
 
@@ -905,14 +973,20 @@ impl QuantumCircuit {
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
     ///
-    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
     /// let p_config = PhaseFlipNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    /// let mut qc = QuantumCircuit::builder()
+    ///     .num_qubits(2)
+    ///     .phase_flip_noise_config(p_config)
+    ///     .build()?;
     ///
-    /// qc.hadamard(0).bit_flip_noise(p_config).cnot(0, 1);
+    /// qc.hadamard(0).phase_flip_noise().cnot(0, 1);
     /// ```
-    pub fn phase_flip_noise(&mut self, config: PhaseFlipNoiseConfig) -> &mut Self {
+    pub fn phase_flip_noise(&mut self) -> &mut Self {
         let mut gn = GateNoise::new();
-        gn.phase_flip_noise(self, config);
+        if let Some(pfc) = self.phase_flip_noise_config.take() {
+            gn.phase_flip_noise(self, &pfc);
+            self.phase_flip_noise_config = Some(pfc);
+        }
         self
     }
 
@@ -924,14 +998,20 @@ impl QuantumCircuit {
     /// ```
     /// use qslrs::quantum::pure_state::qc::QuantumCircuit;
     ///
-    /// let mut qc = QuantumCircuit::builder().num_qubits(2).build()?;
     /// let bp_config = BitPhaseFlipNoiseConfig::new([0, 1].to_vec(), [0.7, 0.7].to_vec());
+    /// let mut qc = QuantumCircuit::builder()
+    ///     .num_qubits(2)
+    ///     .bit_phase_flip_noise_config(bp_config)
+    ///     .build()?;
     ///
-    /// qc.hadamard(0).bit_phase_flip_noise(bp_config).cnot(0, 1);
+    /// qc.hadamard(0).bit_phase_flip_noise().cnot(0, 1);
     /// ```
-    pub fn bit_phase_flip_noise(&mut self, config: BitPhaseFlipNoiseConfig) -> &mut Self {
+    pub fn bit_phase_flip_noise(&mut self) -> &mut Self {
         let mut gn = GateNoise::new();
-        gn.bit_phase_flip_noise(self, config);
+        if let Some(bpfc) = self.bit_phase_flip_noise_config.take() {
+            gn.bit_phase_flip_noise(self, &bpfc);
+            self.bit_phase_flip_noise_config = Some(bpfc);
+        }
         self
     }
 

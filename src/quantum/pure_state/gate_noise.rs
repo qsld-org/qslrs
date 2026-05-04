@@ -114,7 +114,7 @@ impl GateNoise {
     pub(crate) fn depolarizing_noise(
         &mut self,
         qc: &mut QuantumCircuit,
-        config: DepolarizingNoiseConfig,
+        config: &DepolarizingNoiseConfig,
     ) -> Result<(), anyhow::Error> {
         let mut gates: HashMap<String, f64> = HashMap::new();
         gates.insert("X".to_string(), 1.0 / 3.0);
@@ -155,7 +155,7 @@ impl GateNoise {
     pub(crate) fn pauli_noise(
         &mut self,
         qc: &mut QuantumCircuit,
-        config: PauliNoiseConfig,
+        config: &PauliNoiseConfig,
     ) -> Result<(), anyhow::Error> {
         assert!(
             config.probability_map.len() == 4,
@@ -204,7 +204,7 @@ impl GateNoise {
         Ok(())
     }
 
-    pub(crate) fn bit_flip_noise(&mut self, qc: &mut QuantumCircuit, config: BitFlipNoiseConfig) {
+    pub(crate) fn bit_flip_noise(&mut self, qc: &mut QuantumCircuit, config: &BitFlipNoiseConfig) {
         for i in 0..config.qubit_idxs.len() {
             let r: f64 = self.rng.random();
 
@@ -217,7 +217,7 @@ impl GateNoise {
     pub(crate) fn phase_flip_noise(
         &mut self,
         qc: &mut QuantumCircuit,
-        config: PhaseFlipNoiseConfig,
+        config: &PhaseFlipNoiseConfig,
     ) {
         for i in 0..config.qubit_idxs.len() {
             let r: f64 = self.rng.random();
@@ -231,7 +231,7 @@ impl GateNoise {
     pub(crate) fn bit_phase_flip_noise(
         &mut self,
         qc: &mut QuantumCircuit,
-        config: BitPhaseFlipNoiseConfig,
+        config: &BitPhaseFlipNoiseConfig,
     ) {
         for i in 0..config.qubit_idxs.len() {
             let r: f64 = self.rng.random();
