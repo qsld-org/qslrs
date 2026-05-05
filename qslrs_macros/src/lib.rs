@@ -3,7 +3,7 @@ use std::f64::consts::PI;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use rand::{RngExt, SeedableRng, rngs::StdRng, rngs::ThreadRng, seq::IteratorRandom};
+use rand::{RngExt, SeedableRng, rngs::StdRng, seq::IteratorRandom};
 use syn::{
     Ident, LitInt, Result, Token,
     parse::{Parse, ParseStream},
@@ -90,22 +90,31 @@ impl Parse for RandomGateArrayInput {
         let depth: LitInt = input.parse()?;
         let depth = depth.base10_parse::<usize>()?;
 
-        if let Ok(_) = input.parse::<Token![,]>() {
-            let mut seed_value = None;
-            if let Ok(seed_ident) = input.parse::<Ident>() {
-                assert_eq!(seed_ident.to_string(), "seed");
-                input.parse::<Token![=]>()?;
+        if input.peek(Token![,]) {
+            input.parse::<Token![,]>()?;
+        } else {
+            return Ok(RandomGateArrayInput {
+                qc,
+                gates: gates.into_iter().collect(),
+                qubits,
+                depth,
+                seed: None,
+                noises: None,
+            });
+        }
 
-                let seed: LitInt = input.parse()?;
-                seed_value = Some(seed.base10_parse::<u64>()?);
-            }
+        let mut seed = None;
+        let mut noises = None;
+        while !input.is_empty() {
+            let ident: Ident = input.parse()?;
+            input.parse::<Token![=]>()?;
 
-            let mut noises = None;
-            if let Ok(_) = input.parse::<Token![,]>() {
-                if let Ok(noise_ident) = input.parse::<Ident>() {
-                    assert_eq!(noise_ident.to_string(), "noises");
-                    input.parse::<Token![=]>()?;
-
+            match ident.to_string() {
+                val if val == "seed".to_string() => {
+                    let seed_tok: LitInt = input.parse()?;
+                    seed = Some(seed_tok.base10_parse::<u64>()?);
+                }
+                val if val == "noises".to_string() => {
                     let noise_content;
                     syn::bracketed!(noise_content in input);
                     noises = Some(
@@ -115,35 +124,26 @@ impl Parse for RandomGateArrayInput {
                             .collect(),
                     );
                 }
-
-                return Ok(RandomGateArrayInput {
-                    qc,
-                    gates: gates.into_iter().collect(),
-                    qubits,
-                    depth,
-                    seed: seed_value,
-                    noises: noises,
-                });
-            } else {
-                return Ok(RandomGateArrayInput {
-                    qc,
-                    gates: gates.into_iter().collect(),
-                    qubits,
-                    depth,
-                    seed: seed_value,
-                    noises: noises,
-                });
+                _ => panic!(
+                    "Invalid identifier or otherwise invalid token encountered in use of generate_random_circuit",
+                ),
             }
-        } else {
-            return Ok(RandomGateArrayInput {
-                qc: qc,
-                gates: gates.into_iter().collect(),
-                qubits: qubits,
-                depth: depth,
-                seed: None,
-                noises: None,
-            });
+
+            if input.peek(Token![,]) {
+                input.parse::<Token![,]>()?;
+            } else {
+                break;
+            }
         }
+
+        Ok(RandomGateArrayInput {
+            qc,
+            gates: gates.into_iter().collect(),
+            qubits,
+            depth,
+            seed,
+            noises,
+        })
     }
 }
 
