@@ -7,7 +7,7 @@
 </div>
 
 > [!WARNING]
-> The development of this project has moved to [Gitlab](https://gitlab.com/qsld-org/qslrs) due to the incompetence of Github
+> The development of this project has moved to [Codeberg](https://codeberg.org/qsld-org/qslrs.git) due to the incompetence of Github
 
 ### Introduction
 
