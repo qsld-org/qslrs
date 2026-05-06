@@ -6,6 +6,9 @@
 
 </div>
 
+> [!WARNING]
+> The development of this project has moved to [Gitlab](https://gitlab.com/qsld-org/qslrs) due to the incompetence of Github
+
 ### Introduction
 
 QSLRS is an alternative to the already existing QSLD or Quantum Simulation Library in D. However, this one is written in rust and will eventually have extra features.
